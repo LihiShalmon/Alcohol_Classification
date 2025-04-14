@@ -1,0 +1,6 @@
+*.jpg
+*.pyc
+*.png
+*.json
+*.log
+/project/wandb
