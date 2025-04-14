@@ -75,7 +75,7 @@ class Evaluator:
             pred_result = classifier_results_json[i]
             print("pred_result: ", pred_result)
             row = {
-                'image_path': image_paths[i],
+                'file_name': image_paths[i],
                 'visualization_path': visual_paths[i],
                 'ocr_text': texts[i],
                 'ocr_after_correction': ocr_after_correction[i] if ocr_after_correction else None,

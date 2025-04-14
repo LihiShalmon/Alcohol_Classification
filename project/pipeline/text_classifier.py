@@ -5,8 +5,7 @@ from config import regex_classification_terms, non_alcohol_exclude
 
 
 class TextClassifier:
-    def __init__(self, alcohol_keywords=regex_classification_terms,
-                 classification_type="regex", advanced_spell_correction = False):
+    def __init__(self, alcohol_keywords=regex_classification_terms):
         
         self.alcohol_keywords = alcohol_keywords
     

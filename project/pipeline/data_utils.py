@@ -2,8 +2,8 @@ import os
 import random
 from sklearn.model_selection import train_test_split
 
-class ImagePipeline:
-    def __init__(self, image_dir, test_size=0.00, val_size=0.30, seed=42):
+class DataUtils:
+    def __init__(self, image_dir, test_size=0.8, val_size=0.15, seed=42):
         self.image_dir = image_dir
         self.seed = seed
         self.test_size = test_size
@@ -31,10 +31,11 @@ class ImagePipeline:
 
     def in_distribution_splits(self):
         all_paths = self.load_image_paths()
-        trainval_paths, self.test_paths = train_test_split(all_paths, test_size=self.test_size, random_state=self.seed)
-        self.train_paths, self.val_paths = train_test_split(trainval_paths, test_size=self.val_size, random_state=self.seed)
+        self.train_paths, self.test_paths = all_paths, None# train_test_split(all_paths, test_size=0.0, random_state=self.seed)
+        self.val_paths = None
+        # self.train_paths, self.val_paths = train_test_split(trainval_paths, test_size=self.val_size, random_state=self.seed)
         print(f"Train paths: {self.train_paths[:4]}")
-        return  random.sample(self.train_paths, 600), random.sample(self.train_paths, 0), random.sample(self.train_paths, 200)
+        return  self.train_paths, self.train_paths, self.train_paths
 
 
     def print_class_balance(self, paths, name):

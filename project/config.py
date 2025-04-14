@@ -122,6 +122,6 @@ non_alcohol_exclude = {
         "sports drink", "ginger beer", "root beer", "herbal tonic", "diet soda", "cold brew", "iced tea",
         "n/a beverage", "dealcoholized", "alcohol-removed", "non-intoxicating", "non-alc", "na beer",
         "virgin drink", "zero proof", "sober", "juice blend", "plant-based milk", "smoothie",
-        "fruit punch", "lemonade", "soda", "seltzer", "club soda", "tonic water", "shrubs",
+        "fruit punch", "lemonade", "soda",   "club soda", "tonic water"
          "infused water", "herbal tea", "decaf"
     ]}
