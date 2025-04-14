@@ -10,19 +10,15 @@ import re
 from symspellpy import SymSpell, Verbosity
 from config import regex_classification_terms
 import pkg_resources
+from config import ocr_config
 
-COMMON_OCR_MISTAKES = {
-    "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
-    "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
-    "l": "I", "vv": "w",
-}
 
 class OCRProcessor:
-    def __init__(self, predefined_config, font_path="arial.ttf", advanced_spell_correction=False):
+    def __init__(self, predefined_config, font_path="arial.ttf", symspell_correction=False):
         self.ocr = PaddleOCR(**predefined_config)
         self.font_path = font_path if font_path and os.path.exists(font_path) else None
-        self.advanced_spell_correction = advanced_spell_correction
-        if advanced_spell_correction:
+        self.advanced_spell_correction = symspell_correction
+        if symspell_correction:
             self.sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=3)
             dictionary_path = pkg_resources.resource_filename("symspellpy", "frequency_dictionary_en_82_765.txt")
             self.sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1)
@@ -31,7 +27,7 @@ class OCRProcessor:
                     self.sym_spell.create_dictionary_entry(term, 10000)
 
     def correct_text(self, text):
-        for wrong, right in sorted(COMMON_OCR_MISTAKES.items(), key=lambda x: len(x[0]), reverse=True):
+        for wrong, right in sorted(ocr_config["OCR_CHARACTER_CORRECTIONS"].items(), key=lambda x: len(x[0]), reverse=True):
             text = re.sub(re.escape(wrong), right, text)
         if self.advanced_spell_correction:
             text = self.added_spell_correction(text)
@@ -154,178 +150,3 @@ def draw_ocr(pil_image, boxes, texts, scores, font_path=None):
         draw.text((min_x, min_y - 20), f"{text} ({score:.2f})", fill="red", font=font)
 
     return pil_image
-
-# import os
-# import cv2
-# import numpy as np
-# from paddleocr import PaddleOCR, draw_ocr
-# from PIL import ImageDraw, ImageFont
-# from PIL import Image
-# import matplotlib.pyplot as plt
-# import matplotlib
-# matplotlib.use('Agg')  # Set the non-interactive backend globally
-# import re
-# from symspellpy import SymSpell, Verbosity
-# from config import regex_classification_terms
-# import pkg_resources
-
-# COMMON_OCR_MISTAKES = {
-#     "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
-#     "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
-#     "l": "I", "vv": "w",
-# }
-
-# class OCRProcessor:
-#     def __init__(self,predefined_config, font_path="arial.ttf",
-#                   advanced_spell_correction= False):
-        
-#         self.ocr = PaddleOCR( **predefined_config)
-#         self.font_path = font_path if font_path and os.path.exists(font_path) else None
-#         self.advanced_spell_correction = advanced_spell_correction
-#         if advanced_spell_correction:
-#             self.sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
-#             self.dictionary_path = pkg_resources.resource_filename("symspellpy", "frequency_dictionary_en_82_765.txt")
-#             self.sym_spell.load_dictionary(self.dictionary_path, term_index=0, count_index=1)
-        
-    
-#     def correct_text(self, text):
-#         "Replaes the OCR extracted text with a reasonable option"
-#         "Based on charachter shape -eg 3 --> to E " 
-#         sorted_replacements = sorted(COMMON_OCR_MISTAKES.items(),
-#                                       key=lambda x: len(x[0]), reverse=True)
-#         for wrong, right in sorted_replacements:
-#             text = re.sub(re.escape(wrong), right, text)
-#         if self.advanced_spell_correction:
-#             text = self.added_spell_correction(text)
-
-#         return text
-
-#     def get_variants(self, image_bgr):
-#         gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
-#         # contrast = cv2.convertScaleAbs(image_bgr, alpha=1.5, beta=10)
-#         # equalized = cv2.cvtColor(cv2.equalizeHist(gray), cv2.COLOR_GRAY2BGR)
-#         # hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
-       
-#         return {
-#             'original': image_bgr,
-#             'gray': gray,
-#             # 'contrast': contrast,
-#             # 'equalized': equalized,
-#             # "hsv":hsv
-#         }
-
-#     def process_single_variant(self, image_bgr, title):
-#         # perform ocr
-#         # image_rgb = image_bgr
-#         image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-#         result = self.ocr.ocr(image_rgb, cls=True)
-#         if not result or not result[0]:
-#             return Image.fromarray(image_rgb), ""
-        
-#         # check results
-#         lines = result[0]
-#         boxes = [line[0] for line in lines]
-#         texts = [self.correct_text(line[1][0]) for line in lines]
-#         scores = [line[1][1] for line in lines]
-#         combined_text = ", ".join(texts).lower()
-#         # visualize 
-#         box_annotated_instance = draw_ocr(Image.fromarray(image_rgb), boxes, texts, scores,
-#                               font_path=self.font_path)
-#         return box_annotated_instance, combined_text
-
-#     def process_image(self, img_path, save_dir=None):
-#         if not os.path.exists(img_path):
-#             raise FileNotFoundError(img_path)
-
-#         image_bgr = cv2.imread(img_path)
-#         variants = self.get_variants(image_bgr)
-
-#         all_texts = []
-#         fig = plt.figure(figsize=(15, 10))
-#         for i, (name, variant_img) in enumerate(variants.items(), 1):
-#             # draw sigle varience instance
-#             annotated, text = self.process_single_variant(variant_img, name)
-#             all_texts.append(text)
-#             ax = fig.add_subplot(2, 3, i)
-#             ax.imshow(annotated)
-#             ax.set_title(name)
-#             ax.axis('off')
-
-#         combined_text = " ".join(all_texts)
-#         label = img_path.split("\\")[-2]
-#         print(f"Label: {label}, OCR Text: {img_path}")
-#         if save_dir:
-#             os.makedirs(save_dir, exist_ok=True)
-#             filename = os.path.basename(img_path).replace('.jpg', '_ocr.png')
-#             vis_path = os.path.join(save_dir, f"{label}_{filename}")
-#             fig.tight_layout()
-#             fig.savefig(f"{vis_path}")
-#             plt.close(fig)
-#         else:
-#             vis_path = None
-#             plt.show()
-
-#         return {
-#             'image_path': img_path,
-#             'ocr_text': combined_text,
-#             'ocr_visualization': vis_path
-#         }
-
-
-#     def added_spell_correction(self,text):
-
-#         # Add alcohol-related terms to the dictionary
-#         for category, terms in regex_classification_terms.items():
-#             for term in terms:
-#                 self.sym_spell.create_dictionary_entry(term, 10000)
-        
-#         # Process each word
-#         words = text.split()
-#         corrected_words = []
-#         for word in words:
-#             segmented = self.sym_spell.word_segmentation(word)
-#             corrected = self.sym_spell.lookup_compound(segmented.corrected_string, max_edit_distance=2)
-
-#             suggestions = self.sym_spell.lookup(word, Verbosity.CLOSEST, max_edit_distance=2)
-#             if suggestions:
-#                 corrected_words.append(suggestions[0].term)
-#             else:
-#                 corrected_words.append(word)
-        
-#         return " ".join(corrected_words)
-
-
-# def draw_ocr(pil_image, boxes, texts, scores, font_path=None):
-#     """
-#     Minimal fallback for draw_ocr if paddleocr.tools.visualize.draw_ocr is unavailable.
-#     Draw bounding rectangles and text onto a PIL image.
-#     """
-#     draw = ImageDraw.Draw(pil_image)
-
-#     # Use a default font if none is specified or if font_path doesn't exist
-#     if font_path and os.path.exists(font_path):
-#         font = ImageFont.truetype(font_path, 18)
-#     else:
-#         font = ImageFont.load_default()
-
-#     # Zip together all bounding boxes, recognized texts, and confidence scores
-#     for box, text, score in zip(boxes, texts, scores):
-#         # Each box is [[x1, y1],[x2, y2],[x3, y3],[x4, y4]]
-#         # We'll just draw a rectangle around the box:
-#         x_coords = [p[0] for p in box]
-#         y_coords = [p[1] for p in box]
-#         min_x, max_x = min(x_coords), max(x_coords)
-#         min_y, max_y = min(y_coords), max(y_coords)
-
-#         # Outline the bounding box in red
-#         draw.rectangle(
-#             [(min_x, min_y), (max_x, max_y)],
-#             outline="red",
-#             width=2
-#         )
-
-#         # Place text above the box
-#         label = f"{text} ({score:.2f})"
-#         draw.text((min_x, min_y - 20), label, fill="red", font=font)
-
-#     return pil_image

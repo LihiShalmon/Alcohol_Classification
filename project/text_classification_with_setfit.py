@@ -17,7 +17,7 @@ class AlcoholClassifier:
         self,
         model_name: str = "paraphrase-MiniLM-L6-v2",
         batch_size: int = 16,
-        num_iterations: int = 20,
+        num_iterations: int = 10,
         num_epochs: int = 1
     ):
         """
@@ -246,45 +246,48 @@ class AlcoholClassifier:
         """
         self.model = SetFitModel.from_pretrained(load_dir)
 
-# Initialize the classifier
-classifier = AlcoholClassifier(
-    model_name="paraphrase-MiniLM-L6-v2",
-    batch_size=16,
-    num_iterations=20,
-    num_epochs=1
-)
 
-# Split the dataset into train and test CSVs
-input_csv = r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\project\results\regex_without_spelling_corrector\results_non_corrected.csv"# r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\project\results\regex_with_spell_correction\results_spell_corrected.csv"
-train_csv = r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\project\results\regex_without_spelling_corrector\train.csv" #r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\project\results\regex_with_spell_correction\train.csv"
-test_csv = r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\project\results\regex_without_spelling_corrector\test.csv"
+# --- Iterate Over Experiments and Print Metrics ---
+experiment_folders = [
+    "naive_ocr",
+    "regex_no_spelling_corrector",
+    "regex_with_spell_correction",
+    "regex_without_spelling_corrector"
+]
 
-classifier.split_train_test(
-    csv_path=input_csv,
-    train_csv_path=train_csv,
-    test_csv_path=test_csv,
-    test_size=0.2,
-    random_state=42
-)
+base_path = r"C:\Users\LIHI\Documents\Uni\doubleverify\Alcohol_Detection_Classifier\Alcohol_Classification\project\results"
 
-# Train the model
-classifier.fit(train_csv, eval_csv_path=test_csv)
+for exp in experiment_folders:
+    print(f"\n🔍 Evaluating Experiment: {exp}")
+    folder = os.path.join(base_path, exp)
 
-# Evaluate on test set
-metrics = classifier.evaluate(test_csv)
-print(f"Accuracy: {metrics['accuracy']}")
-print(f"Weighted F1: {metrics['weighted_f1']}")
-print(metrics['classification_report'])
+    input_csv = os.path.join(folder, "train.csv")  # or results_spell_corrected.csv if relevant
+    train_csv = os.path.join(folder, "train.csv")
+    test_csv = os.path.join(folder, "test.csv")
 
-# Predict on new texts
-texts = ["Beer 5% ABV", "Orange Juice"]
-predictions = classifier.predict(texts)
-print(predictions)  # ['alcohol', 'non-alcohol']
+    if not os.path.exists(input_csv):
+        print(f"⚠️  Skipping {exp} — input CSV not found.")
+        continue
 
-# Save the model
-classifier.save("alcohol_classifier_model")
+    # Initialize a new model per experiment
+    classifier = AlcoholClassifier()
 
-# Load and reuse
-new_classifier = AlcoholClassifier()
-new_classifier.load("alcohol_classifier_model")
-print(new_classifier.predict("Wine 12%"))  # ['alcohol']
+    # Split
+    classifier.split_train_test(
+        csv_path=input_csv,
+        train_csv_path=train_csv,
+        test_csv_path=test_csv,
+        test_size=0.2
+    )
+
+    # Train
+    classifier.fit(train_csv, eval_csv_path=test_csv)
+
+    # Evaluate
+    metrics = classifier.evaluate(test_csv)
+    print(f"✅ Accuracy:     {metrics['accuracy']:.4f}")
+    print(f"✅ Weighted F1:  {metrics['weighted_f1']:.4f}")
+    print(f"📊 Report:")
+    for label, scores in metrics['classification_report'].items():
+        if isinstance(scores, dict):
+            print(f" - {label:14} | precision: {scores['precision']:.2f}, recall: {scores['recall']:.2f}, f1: {scores['f1-score']:.2f}")

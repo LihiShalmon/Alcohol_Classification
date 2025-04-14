@@ -29,13 +29,13 @@ eval_config = {
 }
 
 ocr_config = {
-    "use_autocorrector": True,
-    "COMMON_OCR_MISTAKES": {
-        "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
-        "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
-        "l": "I", "vv": "w"
-    }
+    "OCR_CHARACTER_CORRECTIONS": {
+    "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
+    "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
+    "l": "I", "vv": "w"
 }
+}
+
 regex_classification_terms = {
         "drink categories": [
             "beer", "wine", "vodka", "rum", "whiskey", "whisky", "tequila", "bourbon",
@@ -98,16 +98,6 @@ regex_classification_terms = {
             "corpse reviver", "zombie", "grasshopper", "french 75", "bellini", "mimosa"
         ],
 
-        # "foreign_terms": [
-        #     "cerveza", "bière", "sake", "soju", "rakija", "aguardiente", "cachaça",
-        #     "arrack", "grappa", "tsipouro", "pivo", "vino", "shochu", "pálinka", "horilka",
-        #     "poitín", "kvass", "chicha", "tepache", "raicilla", "sotol", "borovička", "slivovice"
-        # ],
-        # "abbreviations": [
-        #     "jack", "jwalker", "smirf", "greygoose","captmorgan", "jager", "scotch",
-        #     "captain", "grey", "tanq", "bombay", "jamo", "makers", "bully", "glen",
-        #     "bacardi", "james", "jose", "patrón", "kahl", "coint", "midori", "grandmarn"
-        # ],
         "regulatory_labels": [
             "drink responsibly", "must be 21", "not for minors", #abv
             "alcohol by volume", "enjoy in moderation", "age verification required", "21+ only",
@@ -117,7 +107,7 @@ regex_classification_terms = {
         "other": [
             "alc vol", "alc.", "alcohol", "distilled", "brewery", "winery", "vineyard", "fermented",
             "contains alcohol", "alcohol content", "produced by distillation", "shots", "chaser",
-            "booze", "hooch", "grog", "firewater", "on the rocks", "neat", "shot glass", "proof",
+            "booze", "hooch", "firewater", "on the rocks", "neat", "shot glass", 
             "barrel-aged", "distillery", "craft beer", "abv%", "taproom", "mixer", "bitters",
             "barrel proof", "cask strength", "aged in oak", "small batch", "single malt", "blended"
         ]
@@ -133,5 +123,5 @@ non_alcohol_exclude = {
         "n/a beverage", "dealcoholized", "alcohol-removed", "non-intoxicating", "non-alc", "na beer",
         "virgin drink", "zero proof", "sober", "juice blend", "plant-based milk", "smoothie",
         "fruit punch", "lemonade", "soda", "seltzer", "club soda", "tonic water", "shrubs",
-        "cordial", "syrup", "squash", "ade", "infused water", "herbal tea", "decaf", "coffee"
+         "infused water", "herbal tea", "decaf"
     ]}

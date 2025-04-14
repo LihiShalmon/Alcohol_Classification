@@ -3,7 +3,7 @@ import random
 from sklearn.model_selection import train_test_split
 
 class ImagePipeline:
-    def __init__(self, image_dir, test_size=0.10, val_size=0.10, seed=42):
+    def __init__(self, image_dir, test_size=0.00, val_size=0.30, seed=42):
         self.image_dir = image_dir
         self.seed = seed
         self.test_size = test_size
@@ -34,26 +34,27 @@ class ImagePipeline:
         trainval_paths, self.test_paths = train_test_split(all_paths, test_size=self.test_size, random_state=self.seed)
         self.train_paths, self.val_paths = train_test_split(trainval_paths, test_size=self.val_size, random_state=self.seed)
         print(f"Train paths: {self.train_paths[:4]}")
-        return self.train_paths[:], self.val_paths[:], self.test_paths[:]
+        return  random.sample(self.train_paths, 600), random.sample(self.train_paths, 0), random.sample(self.train_paths, 200)
 
-    def out_of_distribution_split(self):
-        all_paths = self.load_image_paths()
-        y = self.extract_labels_from_paths(all_paths, "alcohol")
-        ood_train_paths, self.ood_test_paths, y_ood_train, y_ood_test = train_test_split(
-            all_paths, y,
-            test_size=self.test_size,
-            stratify=y,  # Maintain class balance
-            random_state=self.seed
-        )
-        self.ood_train_paths, self.ood_val_paths, y_ood_train, y_ood_val = train_test_split(
-            ood_train_paths, y_ood_train,
-            test_size=self.val_size,
-            stratify=y_ood_train,  # Maintain class balance
-            random_state=self.seed
-        )
-        return self.ood_train_paths, self.ood_val_paths, self.ood_test_paths
 
     def print_class_balance(self, paths, name):
         alcohol_count = sum(1 for path in paths if "alcohol" in path)
         non_alcohol = len(paths) - alcohol_count
         print(f"{name}: {non_alcohol / len(paths):.2%} non-alc, {alcohol_count / len(paths):.2%} alc")
+
+    # def out_of_distribution_split(self):
+    #     all_paths = self.load_image_paths()
+    #     y = self.extract_labels_from_paths(all_paths, "alcohol")
+    #     ood_train_paths, self.ood_test_paths, y_ood_train, y_ood_test = train_test_split(
+    #         all_paths, y,
+    #         test_size=self.test_size,
+    #         stratify=y,  # Maintain class balance
+    #         random_state=self.seed
+    #     )
+    #     self.ood_train_paths, self.ood_val_paths, y_ood_train, y_ood_val = train_test_split(
+    #         ood_train_paths, y_ood_train,
+    #         test_size=self.val_size,
+    #         stratify=y_ood_train,  # Maintain class balance
+    #         random_state=self.seed
+    #     )
+    #     return self.ood_train_paths, self.ood_val_paths, self.ood_test_paths
