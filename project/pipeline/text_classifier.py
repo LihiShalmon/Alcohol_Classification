@@ -9,19 +9,27 @@ class TextClassifier:
                  classification_type="regex", advanced_spell_correction = False):
         
         self.alcohol_keywords = alcohol_keywords
-
+    
     def generate_all_regex_predictions(self, images_captions):
         all_results = []
         for cur_caption in images_captions:
+            # Handle empty captions
+            if not cur_caption or cur_caption.strip() == "":
+                all_results.append({
+                    "prediction": "non_alcohol", 
+                    "matches": [],
+                    "matched_words": "",
+                    "matched_categories": ""
+                })
+                continue
+                
+            # This needs to be INSIDE the loop (indented)
             cur_image_matches = self.search_for_image_matches(cur_caption)
             match_strings = [str(m).lower() for m in cur_image_matches]
-
             is_non_alcohol = any("non_alcohol" in s for s in match_strings)
-
             prediction = "non_alcohol" if is_non_alcohol else "alcohol"
-
             all_results.append(self.return_classification_results(cur_image_matches, prediction))
-            
+                
         return all_results
 
     def search_for_image_matches(self, text):

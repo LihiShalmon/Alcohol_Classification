@@ -57,22 +57,52 @@ class OCRProcessor:
             'original': image_bgr,
             'gray': gray,
         }
-
+    
     def process_single_variant(self, image_bgr, title):
+        # perform ocr
         image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-        result = self.ocr.ocr(image_rgb, cls=True)
-        if not result or not result[0]:
+        
+        try:
+            result = self.ocr.ocr(image_rgb, cls=True)
+            
+            # Handle all potential empty result cases
+            if not result or len(result) == 0 or result[0] is None or len(result[0]) == 0:
+                # Return empty text for no detections
+                return Image.fromarray(image_rgb), ""
+            
+            # Extract OCR results
+            lines = result[0]
+            
+            # Validate each line has the expected structure
+            valid_lines = []
+            for line in lines:
+                if isinstance(line, (list, tuple)) and len(line) >= 2:
+                    # Make sure the line contains both box coordinates and text+score
+                    if isinstance(line[0], (list, tuple)) and isinstance(line[1], (list, tuple)) and len(line[1]) >= 2:
+                        valid_lines.append(line)
+            
+            # If no valid lines found after filtering
+            if not valid_lines:
+                return Image.fromarray(image_rgb), ""
+            
+            # Process valid lines
+            boxes = [line[0] for line in valid_lines]
+            texts = [self.correct_text(line[1][0]) for line in valid_lines]
+            scores = [line[1][1] for line in valid_lines]
+            combined_text = ", ".join(texts).lower()
+            
+            # Draw annotations on the image
+            box_annotated_instance = draw_ocr(Image.fromarray(image_rgb), boxes, texts, scores,
+                                font_path=self.font_path)
+            
+            return box_annotated_instance, combined_text
+            
+        except Exception as e:
+            print(f"Error in OCR processing for {title}: {e}")
+            # Return original image with empty text on any exception
             return Image.fromarray(image_rgb), ""
-
-        lines = result[0]
-        boxes = [line[0] for line in lines]
-        texts = [self.correct_text(line[1][0]) for line in lines]
-        scores = [line[1][1] for line in lines]
-        combined_text = ", ".join(texts).lower()
-
-        box_annotated_instance = draw_ocr(Image.fromarray(image_rgb), boxes, texts, scores, font_path=self.font_path)
-        return box_annotated_instance, combined_text
-
+        
+        
     def process_image(self, img_path, save_dir=None):
         if not os.path.exists(img_path):
             raise FileNotFoundError(img_path)
