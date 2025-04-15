@@ -1,5 +1,4 @@
 # 🍷 Alcohol Content Detection in Images
-Detect whether text in images refers to alcohol using OCR, correction, and a SetFit classifier.
 
 ## 🚀 Quick Start
 
@@ -100,19 +99,14 @@ Here’s the structure I followed:
 - PaddleOCR gave better results, especially with bounding boxes and rotated text
 - Also runs fine on CPU, which helped during development
 
-Some useful OCR tweaks:
-- `det_db_thresh = 0.2` → better for low-contrast text
-- `det_db_box_thresh = 0.4` → filters noisy detections
-- `det_db_unclip_ratio = 2.0` → useful for tightly spaced text
-
 ### Step 3: Fixing the Text
 
 #### Character-level corrections:
 - Cleaned up visual mistakes like `"0"` → `"O"`, `"1"` → `"I"`
 
 #### Word-level corrections:
-- Used **SymSpell**, a fast spell-checker
-- I added a custom alcohol-related dictionary to bias corrections toward relevant words like `"vodc4"` → `"vodka"`
+- Used **SymSpell**, a fast spell-checker to add whitespaces, perform spelling according to the word frequencies in English.
+- I increase the weight of alcohol-related terms to encourage corrections toward relevant words like `"vodc4"` → `"vodka"`
 
 ---
 
