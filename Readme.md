@@ -1,7 +1,4 @@
 # 🍷 Alcohol Content Detection in Images
-
-# 🍷 Alcohol Detection from Images
-
 Detect whether text in images refers to alcohol using OCR, correction, and a SetFit classifier.
 
 ## 🚀 Quick Start
