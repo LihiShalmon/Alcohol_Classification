@@ -174,15 +174,6 @@ Spell Correction + SetFit | [TBD] | [TBD] | [TBD] | [TBD]
 
 ---
 
-## 7. What Was Still Hard
-
-- Stylized fonts, curved layouts, and image noise were tough for OCR
-- Merged words made it harder to match phrases
-- Some alcohol words were intentionally obfuscated (hard to catch reliably)
-
----
-
-## 8. What I’d Improve Next
-
-- Refine the regex classification rules — some patterns may have been too aggressive
-- Explore preprocessing steps that could simplify the OCR
+## 7. If I had more time
+- I would do a more detailed error analysis and use it to refine the regex classification rules. Some patterns  have been too aggressive and this could boost performence of the simple methods.
+- Explore preprocessing steps that could simplify the OCR model
