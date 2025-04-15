@@ -162,15 +162,14 @@ Method | F1 Score | Accuracy | Precision | Recall
 Regex only (no speller/visual) | 0.571 | 0.721 | 0.884 | 0.422
 Regex + Visual Fix | 0.690 | 0.784 | 0.942 | 0.544
 Regex + Spell Correction | 0.690 | 0.784 | 0.942 | 0.544
-Spell Correction + SetFit | [TBD] | [TBD] | [TBD] | [TBD]
+Spell Correction + SetFit | 0.91 | 0.91 | 0.92 | 0.91
 
 **Takeaways**:
 - My attempts with PaddleOCR outperformed EasyOCR in both quality and usability
-- the regex based approaches arn't perfect but they tended to have good precision and very low recall meaning lot's of false negative. the model is cautios.
-- The visual error correction helped in terms of accuracy precision and recall
-- The spell correction didn't yeild any diffenrces
-  - it was used afterwards in the SetFit model
-- SetFit gave the most balanced results
+-Regex approach showed high precision (0.884) but poor recall (0.422) - good at avoiding false positives but missed many alcohol mentions
+- Visual fixes improved all metrics significantly (F1 from 0.571 to 0.690) - fixing OCR errors helped capture more alcohol references
+- Spell correction alone showed identical results to visual fixes, suggesting potential overlap in error correction
+- SetFit model with spell correction delivered breakthrough performance (F1: 0.91) - dramatic recall improvement (0.91 vs 0.544) while maintaining high precision
 
 ---
 
