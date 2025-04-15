@@ -29,13 +29,12 @@ class DataUtils:
         y = [1 if alcohol_keyword in path else 0 for path in all_paths]
         return y
 
-    def in_distribution_splits(self):
+    def in_distribution_splits(self, train_image_paths, test_image_paths):
         all_paths = self.load_image_paths()
-        self.train_paths, self.test_paths = all_paths, None# train_test_split(all_paths, test_size=0.0, random_state=self.seed)
-        self.val_paths = None
-        # self.train_paths, self.val_paths = train_test_split(trainval_paths, test_size=self.val_size, random_state=self.seed)
-        print(f"Train paths: {self.train_paths[:4]}")
-        return  self.train_paths, self.train_paths, self.train_paths
+        self.train_paths = self.load_image_paths(train_image_paths)
+        self.text_paths = self.load_image_paths(test_image_paths)
+        # print(f"Train paths: {self.train_paths[:4]}")
+        return  self.train_paths, self.train_paths
 
 
     def print_class_balance(self, paths, name):

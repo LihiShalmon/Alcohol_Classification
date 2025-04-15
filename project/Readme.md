@@ -64,9 +64,9 @@ Some useful OCR tweaks:
 
 ---
 
-## 4. Classifying the Text
+### 4. Classifying the Text
 
-### Try #1: Regex Rules
+#### Try #1: Regex Rules
 
 **Why I started here:**
 Before jumping into neural networks and overly complex solutions, I wanted to see how far I could get with a simpler, more interpretable solution. Regex rules are lightweight, transparent, and easy to iterate on — which made them a solid starting point for this task.
@@ -83,7 +83,7 @@ I generated initial keyword lists using ChatGPT, then reviewed and edited them:
 - ❌ Low recall — missed many alcohol-related cases, likely due to aggressive filtering
 
 
-### Try #2: SetFit
+#### Try #2: SetFit
 While the regex-based solution was more computationally efficient — a clear advantage for large-scale data — this approach wasn’t far behind. It uses a small model and efficient fine-tuning, worked right out of the box and delivers good results and in hindsight, it probably should have been my starting point.
 
 SetFit is known to work **exceptionally well with small datasets**, so I gave it a shot.
@@ -112,17 +112,19 @@ I used it **after text correction**, since I assumed the corrected text would to
 
 ## 6. Sample Results (Filling these in soon)
 
-| Method                        | F1 Score | Accuracy | Precision | Recall |
-|------------------------------|----------|----------|-----------|--------|
-| Regex only                   | [TBD]    | [TBD]    | [TBD]     | [TBD]  |
-| Regex + Spell Correction     | [TBD]    | [TBD]    | [TBD]     | [TBD]  |
-| Spell Correction + SetFit    | [TBD]    | [TBD]    | [TBD]     | [TBD]  |
+Method | F1 Score | Accuracy | Precision | Recall
+Regex only (no speller/visual) | 0.571 | 0.721 | 0.884 | 0.422
+Regex + Visual Fix | 0.690 | 0.784 | 0.942 | 0.544
+Regex + Spell Correction | 0.690 | 0.784 | 0.942 | 0.544
+Spell Correction + SetFit | [TBD] | [TBD] | [TBD] | [TBD]
 
-**Quick takeaways**:
+**Takeaways**:
+- My attempts with PaddleOCR outperformed EasyOCR in both quality and usability
+- the regex based approaches arn't perfect but they tended to have good precision and very low recall meaning lot's of false negative. the model is cautios.
+- The visual error correction helped in terms of accuracy precision and recall
+- The spell correction didn't yeild any diffenrces
+  - it was used afterwards in the SetFit model
 - SetFit gave the most balanced results
-- Regex avoided false positives but missed too much
-- Cleaning the OCR text helped both approaches
-- PaddleOCR outperformed EasyOCR in both quality and usability
 
 ---
 

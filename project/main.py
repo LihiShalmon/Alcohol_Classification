@@ -32,7 +32,7 @@ class PipelineRunner:
         self.classifier = TextClassifier(alcohol_keywords=alcohol_keywords)
         self.evaluator = Evaluator(  experiment_name=experiment_name)
         
-    def run_all_experiments():
+    def run_all_experiments(test_images_path = "images/" ,should_re_train=False):
         experiments =config.experiments
         
         for experiment in experiments:
@@ -55,7 +55,7 @@ class PipelineRunner:
                     alcohol_keywords=config.regex_classification_terms,
                     experiment_name=exp_name
                 )
-                metrics = runner.run()
+                metrics = runner.run(test_images_path = "images/" ,should_re_train=False)
                 
                 # Finish W&B run
                 wandb.finish()
@@ -65,21 +65,52 @@ class PipelineRunner:
             except Exception as e:
                 print(f"Error in experiment {experiment['name']}: {e}")
                 wandb.finish()
-    def run(self):
+    def run(self, test_images_path = "images/" ,should_re_train=False):
         """Execute the pipeline on training data only."""
-        train, val, test = self.data_utils.in_distribution_splits()
+        train, test = self.data_utils.in_distribution_splits()
         print("Processing training images with OCR...")
-        train_data = self._process_images(random.sample(train, 20) )
-        print(f"Predicting on training set... {[r['ocr_text'] for r in train_data][:15]}")
-        train_preds = self.classifier.generate_all_regex_predictions([r['ocr_text'] for r in train_data])
-    
-        print("Training Results:")
-        train_metrics = self.evaluator.evaluate(
-            [r['label'] for r in train_data],
-            train_preds,
-            "train_set" )
-        self._save_results(train_data, train_preds, "train.csv")
+        if should_re_train :
+            train_data = self._process_images(train)
+            print(f"Predicting on training set... {[r['ocr_text'] for r in train_data][:15]}")
+            train_preds = self.classifier.generate_all_regex_predictions([r['ocr_text'] for r in train_data])
+            print("Training Results:")
+            train_metrics = self.evaluator.evaluate(
+                [r['label'] for r in train_data],
+                train_preds,
+                "train_set" )
+            self._save_results(train_data, train_preds, "train.csv")
+        else:
+            # extracting ocr text from images
+            test_data = self._process_images(test)
+            test_preds = self.classifier.generate_all_regex_predictions([r['ocr_text'] for r in test_data])
+            self.evaluator.evaluate( [r['label'] for r in test_data],  test_preds, "test_set" ) 
+            self._save_results(test_data, test_preds, "test.csv")
+            print(f"csv saved to {self.save_dir}/test.csv")
 
+            # predicting over the test set 
+            model_path = "results/saved_model"  # Adjust this to your actual model path
+            clf = SetFitClassifier() 
+            clf.load(model_path)  # Load from pretrained model path
+            
+            print(f"Predicting on test set {self.save_dir}/test.csv")
+            test_df = pd.read_csv(f"{self.save_dir}/test.csv")
+            results_df = clf.predict_df(test_df)
+            results_df.to_csv(f"{self.save_dir}/test_predictions.csv", index=False)
+            print(f"Predictions saved to {self.save_dir}/test_predictions.csv")
+
+            
+
+    def train_classify_with_setfit():
+        # Train + Predict
+        df_raw = pd.read_csv(input_csv_path)
+        clf = SetFitClassifier()
+        clf.fit_on_all(df_raw)
+        df_with_preds = clf.predict_df(df_raw)
+
+        # Save outputs
+        df_with_preds.to_csv(output_csv_path, index=False)
+        clf.save(model_save_path)
+        print(f"\n Saved predictions to {output_csv_path}  & Model to {model_save_path}")
     def _process_images(self, image_list):
         """
         Process a list of images with OCR.
@@ -112,28 +143,20 @@ class PipelineRunner:
         
             
 if __name__ == "__main__":
-    expected_path = os.path.join(os.getcwd(), "project", "main.py")
-    print(f"Looking for file at: {expected_path}")
-    
+    expected_path = os.path.join(os.getcwd(), "project", "main.py")    
     file_path =  expected_path #"./project/main.py"
-    file_directory = os.path.dirname(file_path)
-    os.chdir(file_directory)
-    PipelineRunner.run_all_experiments()
-   
-    # === Run everything ===
-    input_csv_path = "project/results/regex_with_spell_correction/train.csv"#"project\results\all_spell_corrected_results.csv"
-    output_csv_path = "project/results/all_data_with_predictions.csv"
-    model_save_path = "project/results/saved_model"
-    df_raw = pd.read_csv(input_csv_path)
+    os.chdir( os.path.dirname(file_path))
+    #train 
+    PipelineRunner.run_all_experiments(test_images_path = "images/" ,should_re_train=True)
+    
+    #test 
+    os.chdir( os.path.dirname(file_path))
+    input_csv_path = "project/results/all_spell_corrected_results.csv"  #"project\results\all_spell_corrected_results.csv"
+    output_csv_path = "results/all_data_with_predictions.csv"
+    model_save_path = "results/saved_model"
+    PipelineRunner.run_all_experiments(test_images_path = "images/" ,should_re_train=False)
 
-    # Train + Predict
-    clf = SetFitClassifier()
-    clf.fit_on_all(df_raw)
-    df_with_preds = clf.predict_df(df_raw)
 
-    # Save outputs
-    df_with_preds.to_csv(output_csv_path, index=False)
-    clf.save(model_save_path)
-    print(f"\n Saved predictions to {output_csv_path}  & Model to {model_save_path}")
+
 
 
