@@ -7,12 +7,9 @@ from sklearn.metrics import (f1_score, accuracy_score, precision_score,
                              classification_report)
 
 class Evaluator:
-    def __init__(self, experiment_name, text_configuration,
-                 text_classification, text_correction_type):
+    def __init__(self, experiment_name):
         self.experiment_name = experiment_name
-        self.text_configuration = text_configuration
-        self.text_classification = text_classification
-        self.text_correction_type = text_correction_type
+
 
     def evaluate(self, y_true, y_pred, test_set_name):
         metrics = self.track_all_metrics(y_true, y_pred, test_set_name)

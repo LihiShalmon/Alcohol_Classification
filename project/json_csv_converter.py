@@ -54,5 +54,5 @@ def json_to_clean_csv(json_path, csv_path):
         writer.writerows(cleaned_records)
 
 
-json_to_clean_csv(r'project\results\all_spell_corrected_results.json',
-             r'project\results\all_spell_corrected_results.csv')
+# json_to_clean_csv(r'project\results\all_spell_corrected_results.json',
+#              r'project\results\all_spell_corrected_results.csv')

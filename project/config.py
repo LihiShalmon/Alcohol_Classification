@@ -28,6 +28,83 @@ eval_config = {
     "random_seed": 42
 }
 
+experiments = [
+        {
+        "name": "regex_no_spelling_corrector",
+        "advanced_spell_correction": False,
+        "ocr_engine_settings": {
+            "use_angle_cls": True,
+            "lang": 'en',
+            "use_gpu": False,
+            "det_db_thresh": 0.2,
+            "det_db_box_thresh": 0.4,
+            "det_db_unclip_ratio": 2.0
+        },
+        "text_correction": {
+            "use_autocorrector": True,
+            "common_ocr_mistakes": {
+                "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
+                "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
+                "l": "I", "vv": "w"
+            }
+        }
+    }
+        #  ,   {
+        #     "name": "regex_with_spell_correction",
+        #     "advanced_spell_correction": True,
+        #     "ocr_engine_settings": {
+        #         "use_angle_cls": True,
+        #         "lang": 'en',
+        #         "use_gpu": False,
+        #         "det_db_thresh": 0.2,
+        #         "det_db_box_thresh": 0.4,
+        #         "det_db_unclip_ratio": 2.0
+        #     },
+        #     "text_correction": {
+        #         "use_autocorrector": True,
+        #         "common_ocr_mistakes": {
+        #             "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
+        #             "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
+        #             "l": "I", "vv": "w"
+        #         }
+        #     }
+        # },
+        # {
+        #     "name": "naive_ocr",
+        #     "advanced_spell_correction": True,
+        #     "ocr_engine_settings": {
+        #         "lang": 'en',
+        #         "use_gpu": False
+        #     },
+        #     "text_correction": {
+        #         "use_autocorrector": True,
+        #         "common_ocr_mistakes": {
+        #             "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
+        #             "5": "S", "6": "G", "7": "T", "8": "B", "9": "g",
+        #             "l": "I", "vv": "w"
+        #         }
+        #     }
+        # },
+        # {
+        #     "name": "without_visual_correction",
+        #     "advanced_spell_correction": True,
+        #     "ocr_engine_settings": {
+        #         "use_angle_cls": True,
+        #         "lang": 'en',
+        #         "use_gpu": False,
+        #         "det_db_thresh": 0.2,
+        #         "det_db_box_thresh": 0.4,
+        #         "det_db_unclip_ratio": 2.0
+        #     },
+        #     "text_correction": {
+        #         "use_autocorrector": True,
+        #         "common_ocr_mistakes": {
+        #             "DONT": "DONT"  # Effectively disables it
+        #         }
+        #     }
+        # }
+    ]
+
 ocr_config = {
     "OCR_CHARACTER_CORRECTIONS": {
     "0": "O", "1": "I", "2": "Z", "3": "E", "4": "A",
