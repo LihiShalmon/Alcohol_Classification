@@ -129,10 +129,7 @@ class SetFitClassifier:
                 pred_value = int(pred)
             preds_str.append(self.reverse_label_mapping[pred_value])
         
-        # Add predictions to dataframe
-        results_df["setfit_predicted_label"] = preds_str
-        
-        # Calculate accuracy if true labels are available
+        results_df["prediction"] = preds_str
         if "true_label" in results_df.columns or "label" in results_df.columns:
             label_column = "true_label" if "true_label" in results_df.columns else "label"
             valid_rows = results_df[results_df[label_column].isin(self.label_mapping.keys())]
@@ -160,8 +157,8 @@ class SetFitClassifier:
 # Main function to train and save the model
 def main():
     # Define paths
-    input_csv = "project/results/all_spell_corrected_results.csv"
-    output_csv = "results/all_data_with_predictions.csv"
+    input_csv = "project/results/regex_with_spell_correction"
+    output_csv = "results/results.csv"
     model_save_path = "results/saved_model"
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     print(f"Loading data from {input_csv}")
@@ -172,7 +169,6 @@ def main():
         print(f"Error loading CSV: {e}")
         return
     
-    # Initialize classifier
     clf = SetFitClassifier(
         num_epochs=1,
         batch_size=16,
@@ -189,7 +185,6 @@ def main():
         clf.save(model_save_path)
 
     print("Making predictions...")
-    # Add data type validation before prediction
     print("Checking for non-string values in text columns...")
     if "text" in df_raw.columns:
         non_str_count = sum(~df_raw["text"].apply(lambda x: isinstance(x, str)))

@@ -146,15 +146,16 @@ if __name__ == "__main__":
     expected_path = os.path.join(os.getcwd(), "project", "main.py")    
     file_path =  expected_path #"./project/main.py"
     os.chdir( os.path.dirname(file_path))
-    #train 
-    PipelineRunner.run_all_experiments(test_images_path = "images/" ,should_re_train=True)
+    # #train 
+    # PipelineRunner.run_all_experiments(test_images_path = "images/" ,should_re_train=True)
     
     #test 
     os.chdir( os.path.dirname(file_path))
-    input_csv_path = "project/results/all_spell_corrected_results.csv"  #"project\results\all_spell_corrected_results.csv"
-    output_csv_path = "results/all_data_with_predictions.csv"
+    input_csv = "project\results\all_spell_corrected_results.csv"
+    test_images_path = "images/"
+    output_csv_path = "results/results.csv"
     model_save_path = "results/saved_model"
-    PipelineRunner.run_all_experiments(test_images_path = "images/" ,should_re_train=False)
+    PipelineRunner.run_all_experiments(test_images_path = test_images_path ,should_re_train=False)
 
 
 

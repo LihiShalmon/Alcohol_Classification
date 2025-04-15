@@ -1,9 +1,64 @@
 # 🍷 Alcohol Content Detection in Images
 
-## 1. What’s the Goal?
+# 🍷 Alcohol Detection from Images
 
-I built a pipeline that looks at images and figures out whether the **text inside them refers to alcohol**.
+Detect whether text in images refers to alcohol using OCR, correction, and a SetFit classifier.
 
+## 🚀 Quick Start
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/your-username/alcohol-text-detector.git
+cd alcohol-text-detector
+python -m venv venv
+source venv/bin/activate      # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Folder Structure
+Place your test images here:
+```
+images/
+└── my_experiment/
+    ├── alcohol/
+    │   └── img001.jpg
+    └── non_alcohol/
+        └── img002.jpg
+```
+
+### 3. Configure & Run Test
+In project/main.py, update the following:
+```python
+os.chdir(os.path.dirname(file_path))
+input_csv = "project/results/all_spell_corrected_results.csv"
+test_images_path = "images/"
+output_csv_path = "results/results.csv"
+model_save_path = "results/saved_model"
+PipelineRunner.run_all_experiments(
+    test_images_path=test_images_path,
+    should_re_train=False
+)
+```
+
+Then run:
+```bash
+python project/main.py
+```
+
+###  Output
+Predictions are saved to:
+```
+results/results.csv
+```
+
+Example output:
+```
+file_name,prediction
+img001.jpg,alcohol
+img002.jpg,non_alcohol
+```
+
+## 1. About the project
 The idea was to build something simple but effective, that can:
 1. Read text from the image using OCR
 2. Clean up OCR mistakes
