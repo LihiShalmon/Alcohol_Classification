@@ -90,8 +90,38 @@ class SetFitClassifier:
         preds = self.model.predict(df_processed["text"].tolist())
         preds = [int(p.item() if hasattr(p, "item") else p) for p in preds]
         labels = df_processed["label"].tolist()
+        
+        # Calculate metrics
         accuracy = sum(p == y for p, y in zip(preds, labels)) / len(labels)
-        print(f"Training accuracy: {accuracy:.4f}")
+        
+        # Calculate recall for each class and average
+        class_recalls = {}
+        for class_id in self.label_mapping.values():
+            true_positives = sum(1 for p, y in zip(preds, labels) if p == class_id and y == class_id)
+            actual_positives = sum(1 for y in labels if y == class_id)
+            recall = true_positives / actual_positives if actual_positives > 0 else 0
+            class_recalls[class_id] = recall
+        
+        avg_recall = sum(class_recalls.values()) / len(class_recalls)
+        
+        # Calculate precision for each class and average
+        class_precisions = {}
+        for class_id in self.label_mapping.values():
+            true_positives = sum(1 for p, y in zip(preds, labels) if p == class_id and y == class_id)
+            predicted_positives = sum(1 for p in preds if p == class_id)
+            precision = true_positives / predicted_positives if predicted_positives > 0 else 0
+            class_precisions[class_id] = precision
+        
+        avg_precision = sum(class_precisions.values()) / len(class_precisions)
+        
+        # Calculate F1 score (harmonic mean of precision and recall)
+        f1_score = 2 * (avg_precision * avg_recall) / (avg_precision + avg_recall) if (avg_precision + avg_recall) > 0 else 0
+        
+        print(f"Training metrics:")
+        print(f"  - Accuracy: {accuracy:.4f}")
+        print(f"  - Avg Recall: {avg_recall:.4f}")
+        print(f"  - Avg Precision: {avg_precision:.4f}")
+        print(f"  - F1 Score: {f1_score:.4f}")
         
         return self
         
@@ -129,13 +159,49 @@ class SetFitClassifier:
                 pred_value = int(pred)
             preds_str.append(self.reverse_label_mapping[pred_value])
         
-        results_df["prediction"] = preds_str
+        # Add predictions to dataframe
+        results_df["predicted"] = preds_str
+        
+        # Calculate accuracy if true labels are available
         if "true_label" in results_df.columns or "label" in results_df.columns:
             label_column = "true_label" if "true_label" in results_df.columns else "label"
             valid_rows = results_df[results_df[label_column].isin(self.label_mapping.keys())]
             if len(valid_rows) > 0:
-                accuracy = sum(valid_rows["setfit_predicted_label"] == valid_rows[label_column]) / len(valid_rows)
-                print(f"Prediction accuracy: {accuracy:.4f}")
+                # Calculate accuracy
+                accuracy = sum(valid_rows["predicted"] == valid_rows[label_column]) / len(valid_rows)
+                
+                # Convert labels to integers for metric calculations
+                true_labels = valid_rows[label_column].map(self.label_mapping).tolist()
+                pred_labels = valid_rows["predicted"].map(self.label_mapping).tolist()
+                
+                # Calculate recall for each class and average
+                class_recalls = {}
+                for class_id in self.label_mapping.values():
+                    true_positives = sum(1 for p, y in zip(pred_labels, true_labels) if p == class_id and y == class_id)
+                    actual_positives = sum(1 for y in true_labels if y == class_id)
+                    recall = true_positives / actual_positives if actual_positives > 0 else 0
+                    class_recalls[class_id] = recall
+                
+                avg_recall = sum(class_recalls.values()) / len(class_recalls)
+                
+                # Calculate precision for each class and average
+                class_precisions = {}
+                for class_id in self.label_mapping.values():
+                    true_positives = sum(1 for p, y in zip(pred_labels, true_labels) if p == class_id and y == class_id)
+                    predicted_positives = sum(1 for p in pred_labels if p == class_id)
+                    precision = true_positives / predicted_positives if predicted_positives > 0 else 0
+                    class_precisions[class_id] = precision
+                
+                avg_precision = sum(class_precisions.values()) / len(class_precisions)
+                
+                # Calculate F1 score
+                f1_score = 2 * (avg_precision * avg_recall) / (avg_precision + avg_recall) if (avg_precision + avg_recall) > 0 else 0
+                
+                print(f"Prediction metrics:")
+                print(f"  - Accuracy: {accuracy:.4f}")
+                print(f"  - Avg Recall: {avg_recall:.4f}")
+                print(f"  - Avg Precision: {avg_precision:.4f}")
+                print(f"  - F1 Score: {f1_score:.4f}")
         
         return results_df
 
@@ -157,8 +223,8 @@ class SetFitClassifier:
 # Main function to train and save the model
 def main():
     # Define paths
-    input_csv = "project/results/regex_with_spell_correction"
-    output_csv = "results/results.csv"
+    input_csv = "project/results/all_spell_corrected_results.csv"
+    output_csv = "results/all_data_with_predictions.csv"
     model_save_path = "results/saved_model"
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     print(f"Loading data from {input_csv}")
@@ -169,22 +235,24 @@ def main():
         print(f"Error loading CSV: {e}")
         return
     
+    # Initialize classifier
     clf = SetFitClassifier(
         num_epochs=1,
         batch_size=16,
-        num_iterations=5
+        num_iterations=3
     )
     
     # Check if model already exists, if so, load it instead of retraining
-    if os.path.exists(model_save_path):
-        print(f"Loading existing model from {model_save_path}...")
-        clf.load(model_save_path)
-    else:
-        print("Training SetFit model...")
-        clf.fit_on_all(df_raw)
-        clf.save(model_save_path)
+    # if os.path.exists(model_save_path):
+    #     print(f"Loading existing model from {model_save_path}...")
+    #     clf.load(model_save_path)
+    # else:
+    print("Training SetFit model...")
+    clf.fit_on_all(df_raw)
+    clf.save(model_save_path)
 
     print("Making predictions...")
+    # Add data type validation before prediction
     print("Checking for non-string values in text columns...")
     if "text" in df_raw.columns:
         non_str_count = sum(~df_raw["text"].apply(lambda x: isinstance(x, str)))
